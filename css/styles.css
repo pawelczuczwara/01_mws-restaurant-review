@@ -62,34 +62,23 @@ h6 {
   /* margin: 0 0 20px; */
 }
 
-/* article,
-aside,
-canvas,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-menu,
-nav,
-section {
-  display: block;
-} */
-
 #maincontent {
   background-color: var(--back-color);
   /* min-height: 100%; */
 }
 
 #footer {
-  background-color: #444;
-  color: #aaa;
+  background-color: var(--dark-color);
+  color: var(--light-font);
   font-size: 8pt;
   letter-spacing: 1px;
   padding: 25px;
   text-align: center;
   text-transform: uppercase;
+}
+
+#footer a {
+  color: var(--light-font);
 }
 
 /* ====================== Navigation ====================== */
@@ -150,10 +139,9 @@ nav h1 a {
 }
 
 /* ====================== Map ====================== */
-#map {
+.map-index {
   height: 400px;
   width: 100%;
-
   background-color: var(--back-color);
 }
 
@@ -249,9 +237,8 @@ nav h1 a {
   display: inline-block;
 
   background-color: var(--main-color);
-  border-bottom: 3px solid #eee;
 
-  color: #fff;
+  color: var(--light-font);
   font-size: 1em;
   text-align: center;
   text-decoration: none;
@@ -267,39 +254,39 @@ nav h1 a {
   z-index: 1000;
 }
 
-.inside #map-container {
-  background: grey none repeat scroll 0 0;
-  height: 90%;
+/* .inside #map-container { */
+.map-detail-cont {
   position: fixed;
   right: 0;
   top: 77px;
+
+  height: calc(100vh - 80px);
   width: 50%;
+
+  background: grey none repeat scroll 0 0;
 }
 
-.inside #map {
-  background-color: #ccc;
+/* .inside #map { */
+.map-detail {
   height: 100%;
   width: 100%;
+
+  background-color: #ccc;
 }
 
 .inside #footer {
   bottom: 0;
   position: fixed;
-  /* width: 100%; */
   width: calc(50% - 50px);
 }
 
 #restaurant-name {
-  color: var(--main-color);;
+  color: var(--main-color);
   font-family: Arial, sans-serif;
   font-size: 20pt;
   font-weight: 200;
   text-align: center;
-  /* letter-spacing: 0; */
-  /* margin: 15px 0 30px; */
-
   text-transform: uppercase;
-  /* line-height: 1.1; */
 }
 
 #restaurant-img {
@@ -369,15 +356,11 @@ nav h1 a {
   padding: 10px;
 }
 
-/* #restaurant-hours td {
-  /* color: var(--dark-font); */
-} */
 
 
 /* ------------------------ media query ----------------------------- */
-/* On screens 0 - 420px */
-@media screen and (max-width: 420px) {
-
+/* On screens 0 - 600px */
+@media screen and (max-width: 600px) {
 
   /* ------------------------ Restaurant Filtering ------------------------ */
   .filter-options {
@@ -399,6 +382,7 @@ nav h1 a {
     width: 100%;
   }
 
+
   /* ====================== Restaurant Details ====================== */
 
   .inside {
@@ -413,14 +397,16 @@ nav h1 a {
     z-index: 10000;
   }
 
-  .inside #map-container {
+  /* .inside #map-container { */
+  .map-detail-cont {
     position: relative;
     height: 300px;
     top: 140px;
     width: 100%;
   }
 
-  .inside #map {
+  /* .inside #map { */
+  .map-detail {
     position: relative;
     width: 100%;
   }
@@ -429,7 +415,7 @@ nav h1 a {
     /* bottom: 0; */
     position: relative;
     width: 100%;
-  } */
+  }
 
   #restaurant-container,
   #reviews-container,
@@ -473,6 +459,11 @@ nav h1 a {
 /* On screens 992px wide or more*/
 @media screen and (min-width: 1200px) {
 
+  #maincontent {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
   .inside #maincontent {
     display: grid;
     grid-template-columns: 25% 25% 50%;
@@ -484,12 +475,49 @@ nav h1 a {
   }
 
   #reviews-container {
-    padding: 145px 0px 50px;
+    padding: 150px 0px 50px;
   }
 
   /* ====================== Map ====================== */
-  .inside #map {
-    height: calc(100vh - 80px);
+
+  .map-index-cont {
     position: fixed;
+    right: 0;
+    top: 77px;
+
+    height: calc(100vh - 140px);
+    width: 50%;
   }
+
+  .map-index {
+    height: 100%;
+    width: 100%;
+  }
+
+  header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+
+  .filter-options {
+    position: fixed;
+    top: 76px;
+    z-index: 1000;
+
+    width: 50%;
+  }
+
+  #restaurants-list {
+    margin-top: 140px;
+    margin-bottom: 100px;
+  }
+
+  #footer {
+    bottom: 0;
+    position: fixed;
+    width: 100%;
+  }
+
 }
