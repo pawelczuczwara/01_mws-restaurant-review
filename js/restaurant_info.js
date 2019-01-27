@@ -8,6 +8,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
   initMap();
 });
 
+// scroll to address and hours
+scrollDescription = () => {
+  const node = document.getElementById('restaurant-img');
+  node.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
+}
+
 /**
  * Initialize leaflet map
  */
@@ -89,6 +95,10 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img'
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.srcset = DBHelper.imageSrcsetForRestaurant(restaurant);
+  image.sizes = '250px';
+  image.alt = restaurant.name;
+
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -99,6 +109,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   }
   // fill reviews
   fillReviewsHTML();
+  scrollDescription();
 }
 
 /**

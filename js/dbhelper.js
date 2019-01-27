@@ -150,20 +150,42 @@ class DBHelper {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
-    return (`/img/${restaurant.photograph}`);
+    const i = restaurant.photograph.replace('.jpg', '_200.jpg')
+    return (`/img/${i}`);
+  }
+
+  /**
+   * Restaurant image URL srcset.
+   */
+  static imageSrcsetForRestaurant(restaurant) {
+    const i_400 = restaurant.photograph.replace('.jpg', '_400.jpg');
+    const i_800 = restaurant.photograph.replace('.jpg', '_800.jpg');
+    return (`/img/${i_400} 400w, /img/${i_800} 800w`);
   }
 
   /**
    * Map marker for a restaurant.
    */
-   static mapMarkerForRestaurant(restaurant, map) {
-    // https://leafletjs.com/reference-1.3.0.html#marker
-    const marker = new L.marker([restaurant.latlng.lat, restaurant.latlng.lng],
-      {title: restaurant.name,
+  static mapMarkerForRestaurant(restaurant, map) {
+
+    const myIcon = L.divIcon({
+      className: "custom-pin",
+      iconAnchor: [0, 24],
+      labelAnchor: [-6, 0],
+      popupAnchor: [0, +36],
+      html: `<span class="custom-pin" />`
+    })
+
+    // https://leafletjs.com/reference-1.4.0.html#marker
+    const marker = new L.marker([restaurant.latlng.lat, restaurant.latlng.lng], {
+      title: restaurant.name,
       alt: restaurant.name,
-      url: DBHelper.urlForRestaurant(restaurant)
-      })
-      marker.addTo(newMap);
+      url: DBHelper.urlForRestaurant(restaurant),
+      icon: myIcon,
+      keyboard: true,
+      riseOnHover: true,
+    })
+    marker.addTo(newMap);
     return marker;
   }
   /* static mapMarkerForRestaurant(restaurant, map) {
@@ -178,4 +200,3 @@ class DBHelper {
   } */
 
 }
-
