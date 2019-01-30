@@ -5,7 +5,7 @@
 
 The **Restaurant Reviews** is a static webpage converted to a mobile-ready web application.
 
-1. Responsive DSIGN on different sized displays.
+1. Responsive DESIGN on different sized displays.
 2. Accessible for screen reader use with aria descriptive atributes.
 3. Registerd service worker for content chashing.
 4. Vanilla JavaScript
