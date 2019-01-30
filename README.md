@@ -1,4 +1,4 @@
-# Mobile Web Specialist Certification Course
+# Offline cached responsive Restaurant Reviews
 ---
 
 ## Project Overview:
