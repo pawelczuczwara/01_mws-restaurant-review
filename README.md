@@ -23,6 +23,7 @@ JavaScript
 Leaflet.js
 - custom leaflet map markers with shadows and colors on focus
 - updated leaflet version to 1.4.0
+- cached all tiles from visited locations
 
 
 ### How to start?

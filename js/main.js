@@ -80,20 +80,84 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
  */
 initMap = () => {
   self.newMap = L.map('map', {
-        center: [40.722216, -73.987501],
-        zoom: 12,
-        scrollWheelZoom: false
-      });
-  L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.jpg70?access_token={mapboxToken}', {
+    center: [40.722216, -73.987501],
+    zoom: 12,
+    scrollWheelZoom: false
+  });
+  let mapId = 'mapbox.streets';
+
+  // let offlineLayer = L.tileLayer.offline(`https://api.tiles.mapbox.com/v4/${mapId}/{z}/{x}/{y}.jpg70?access_token={mapboxToken}`, tilesDb, {
+  //   mapboxToken: 'pk.eyJ1IjoiYmFiZWwtYmFiZWwiLCJhIjoiY2pyY2U2bzFvMDBzZzQ0cnp0azN4ZGg3MCJ9.gb6cqiIgB_zMKyHznjoHHA',
+  //   maxZoom: 18,
+  //   attribution: '&copy; <a href="https://www.openstreetmap.org/" tabindex="-1">OpenStreetMap</a>',
+  //   crossOrigin: true,
+  //   subdomains: 'abc'
+  // }).addTo(newMap);
+  L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.jpg70?access_token={mapboxToken}',  {
     mapboxToken: 'pk.eyJ1IjoiYmFiZWwtYmFiZWwiLCJhIjoiY2pyY2U2bzFvMDBzZzQ0cnp0azN4ZGg3MCJ9.gb6cqiIgB_zMKyHznjoHHA',
     maxZoom: 18,
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-      '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-      'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/" tabindex="-1">OpenStreetMap</a>',
     id: 'mapbox.streets'
   }).addTo(newMap);
 
+  //   L.tileLayer.offline('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', tilesDb, {
+  //     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  //     subdomains: 'abc',
+  //     minZoom: 13,
+  //     maxZoom: 19,
+  //     crossOrigin: true
+  // });
+
   updateRestaurants();
+
+  // var offlineControl = L.control.offline(offlineLayer, tilesDb, {
+  //   saveButtonHtml: '<i class="fa fa-download" aria-hidden="true"></i>',
+  //   removeButtonHtml: '<i class="fa fa-trash" aria-hidden="true"></i>',
+  //   confirmSavingCallback: function (nTilesToSave, continueSaveTiles) {
+  //     if (window.confirm('Save ' + nTilesToSave + '?')) {
+  //       continueSaveTiles();
+  //     }
+  //   },
+  //   confirmRemovalCallback: function (continueRemoveTiles) {
+  //     if (window.confirm('Remove all the tiles?')) {
+  //       continueRemoveTiles();
+  //     }
+  //   },
+  //   minZoom: 13,
+  //   maxZoom: 19
+  // });
+
+  // offlineControl.addTo(newMap);
+
+  // offlineLayer.on('offline:below-min-zoom-error', function () {
+  //   alert('Can not save tiles below minimum zoom level.');
+  // });
+
+  // offlineLayer.on('offline:save-start', function (data) {
+  //   console.log('Saving ' + data.nTilesToSave + ' tiles.');
+  // });
+
+  // offlineLayer.on('offline:save-end', function () {
+  //   alert('All the tiles were saved.');
+  // });
+
+  // offlineLayer.on('offline:save-error', function (err) {
+  //   console.error('Error when saving tiles: ' + err);
+  // });
+
+  // offlineLayer.on('offline:remove-start', function () {
+  //   console.log('Removing tiles.');
+  // });
+
+  // offlineLayer.on('offline:remove-end', function () {
+  //   alert('All the tiles were removed.');
+  // });
+
+  // offlineLayer.on('offline:remove-error', function (err) {
+  //   console.error('Error when removing tiles: ' + err);
+  // });
+
+
 }
 /* window.initMap = () => {
   let loc = {
@@ -168,6 +232,7 @@ createRestaurantHTML = (restaurant) => {
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  // image.setAttribute('data-src', DBHelper.imageUrlForRestaurant(restaurant));
   image.alt = restaurant.name;
   image.srcset = DBHelper.imageSrcsetForRestaurant(restaurant);
   image.sizes = '220px';
@@ -203,6 +268,7 @@ addMarkersToMap = (restaurants = self.restaurants) => {
     // Add marker to the map
     const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.newMap);
     marker.on("click", onClick);
+
     function onClick() {
       window.location.href = marker.options.url;
     }
@@ -221,3 +287,75 @@ addMarkersToMap = (restaurants = self.restaurants) => {
   });
 } */
 
+// offline tiles for leaflet
+// https://github.com/robertomlsoares/leaflet-offline
+
+var tilesDb = {
+  getItem: function (key) {
+    return localforage.getItem(key);
+  },
+
+  saveTiles: function (tileUrls) {
+    var self = this;
+
+    var promises = [];
+
+    for (var i = 0; i < tileUrls.length; i++) {
+      var tileUrl = tileUrls[i];
+
+      (function (i, tileUrl) {
+        promises[i] = new Promise(function (resolve, reject) {
+          var request = new XMLHttpRequest();
+          request.open('GET', tileUrl.url, true);
+          request.responseType = 'blob';
+          request.onreadystatechange = function () {
+            if (request.readyState === XMLHttpRequest.DONE) {
+              if (request.status === 200) {
+                resolve(self._saveTile(tileUrl.key, request.response));
+              } else {
+                reject({
+                  status: request.status,
+                  statusText: request.statusText
+                });
+              }
+            }
+          };
+          request.send();
+        });
+      })(i, tileUrl);
+    }
+
+    return Promise.all(promises);
+  },
+
+  clear: function () {
+    return localforage.clear();
+  },
+
+  _saveTile: function (key, value) {
+    return this._removeItem(key).then(function () {
+      return localforage.setItem(key, value);
+    });
+  },
+
+  _removeItem: function (key) {
+    return localforage.removeItem(key);
+  }
+};
+
+// var offlineControl = L.control.offline(offlineLayer, tilesDb, {
+//   saveButtonHtml: '<i class="fa fa-download" aria-hidden="true"></i>',
+//   removeButtonHtml: '<i class="fa fa-trash" aria-hidden="true"></i>',
+//   confirmSavingCallback: function (nTilesToSave, continueSaveTiles) {
+//       if (window.confirm('Save ' + nTilesToSave + '?')) {
+//           continueSaveTiles();
+//       }
+//   },
+//   confirmRemovalCallback: function (continueRemoveTiles) {
+//       if (window.confirm('Remove all the tiles?')) {
+//           continueRemoveTiles();
+//       }
+//   },
+//   minZoom: 13,
+//   maxZoom: 19
+// });

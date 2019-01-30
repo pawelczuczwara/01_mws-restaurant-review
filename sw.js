@@ -1,4 +1,10 @@
 var cacheStorageName = 'restaurant-v1';
+var cacheImgName = 'tiles-mapbox-v1';
+
+var allCaches = [
+  cacheStorageName,
+  cacheImgName
+];
 
 const initialCacheList = [
   '/',
@@ -24,7 +30,9 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.filter((cacheName) => {
-          return cacheName.startsWith('restaurant-') && cacheName != cacheStorageName;
+          return cacheName.startsWith('restaurant-') &&
+            !allCaches.includes(cacheName);
+          //cacheName != cacheStorageName;
         }).map((cacheName) => {
           return caches.delete(cacheName);
         })
@@ -34,17 +42,21 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  var requestUrl = new URL(event.request.url);
 
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // return response || fetch(event.request);
-      if (response) {
-        return response;
-      }
-      return fetch(event.request).then(
-        (response) => {
+  if (requestUrl.host === 'api.tiles.mapbox.com') {
+    event.respondWith(serveTile(event.request));
+    return;
+  } else {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        // return response || fetch(event.request);
+        if (response) {
+          return response;
+        }
+        return fetch(event.request).then((response) => {
           // Check if we received a valid response
-          if(!response || response.status !== 200 || response.type !== 'basic') {
+          if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
 
@@ -54,18 +66,53 @@ self.addEventListener('fetch', (event) => {
           // to clone it so we have two streams.
           var responseToCache = response.clone();
 
-          caches.open(cacheStorageName)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+          caches.open(cacheStorageName).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
 
           return response;
-        }
-      );
-    })
-    .catch((error) => {
-      console.warn(error + '\n Not in chache: ' + event.request.url);
-      return error;
-    })
-  );
+        });
+      })
+      .catch((error) => {
+        console.warn(error + '\n Not in chache: ' + event.request.url);
+        return error;
+      })
+    );
+
+  }
 });
+
+
+function serveTile(request) {
+  // Tile urls look like:
+  // https://api.tiles.mapbox.com/v4/mapbox.streets/13/2410/3079.jpg70?access_token=pk.eyJ1IjoiYmFiZWwtYmFiZWwiLCJhIjoiY2pyY2U2bzFvMDBzZzQ0cnp0azN4ZGg3MCJ9.gb6cqiIgB_zMKyHznjoHHA
+  // But storageUrl has the 70?access_token=* part missing.
+  // Use this url to store & match the image in the cache.
+  // This means I only store one copy of each tile.
+
+  // var storageUrl = request.url.replace(/-\d+px\.jpg$/, '');
+  var storageUrl = request.url.split("70?access_token=")[0];
+
+
+  // return images from the "wittr-content-imgs" cache
+  // if they're in there. Otherwise, fetch the images from
+  // the network, put them into the cache, and send it back
+  // to the browser.
+  //
+  // Hcache.put supports a plain url as the first parameter
+  return caches.open(cacheImgName).then(function(cache) {
+    return cache.match(storageUrl).then(function(resp) {
+      //if it is in cache, return jpg from cache
+      if (resp) return resp;
+
+      // otherwise request it from network
+      return fetch(request).then(function(networkResp) {
+        // and clone one copy to the cache
+        cache.put(storageUrl, networkResp.clone());
+        return networkResp;
+      });
+    }).catch((err) => {
+      console.warn('Map tile not in cache: ' + err);
+    });
+  });
+}
